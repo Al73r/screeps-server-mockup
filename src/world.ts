@@ -82,7 +82,10 @@ export default class World {
             throw new Error(`room ${room} doesn't appear to have any terrain data`);
         }
         // Parse and return terrain data as a TerrainMatrix
-        const serial = _.get(_.first(data), 'terrain');
+        const serial: string | undefined = _.get(_.first(data), 'terrain');
+        if (serial === undefined) {
+            throw new Error(`room ${room} terrain data is missing the terrain field`);
+        }
         return TerrainMatrix.unserialize(serial);
     }
 

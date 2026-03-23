@@ -110,7 +110,7 @@ export default class ScreepsServer extends EventEmitter {
             process.on('message', (message) => {
                 if (message === 'storageLaunched') {
                     clearTimeout(timeout);
-                    resolve();
+                    resolve(undefined);
                 }
             });
         });
@@ -124,7 +124,7 @@ export default class ScreepsServer extends EventEmitter {
             this.roomsQueue = await driver.queue.create('rooms');
             this.connected = true;
         } catch (err) {
-            throw new Error(`Error connecting to driver: ${err.stack}`);
+            throw new Error(`Error connecting to driver: ${(err as Error).stack}`);
         }
         return this;
     }
