@@ -7,16 +7,16 @@ A Node.js library that runs a private Screeps server one tick at a time for auto
 ## Build, Test, and Lint
 
 ```bash
-yarn build          # Compile TypeScript → dist/
-yarn test           # Build + run full Mocha suite
-yarn lint           # ESLint on src/, test/, utils/
-yarn coverage       # Build + tests with nyc coverage
+npm run build       # Compile TypeScript → dist/
+npm test            # Build + run full Mocha suite
+npm run lint        # ESLint on src/, test/, utils/
+npm run coverage    # Build + tests with nyc coverage
 ```
 
 Run a single test by name:
 
 ```bash
-yarn build && npx mocha --ui tdd --grep "test name here" dist/test/
+npm run build && npx mocha --ui tdd --grep "test name here" dist/test/
 ```
 
 Tests run against compiled JS in `dist/`, so always build first.
