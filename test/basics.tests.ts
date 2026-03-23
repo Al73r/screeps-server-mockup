@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 import ScreepsServer, { ScreepServerOptions } from '../src/screepsServer';
 
-const stdHooks = require('../../utils/stdhooks');
+import * as stdHooks from '../utils/stdhooks';
 
 // Dirty hack to prevent driver from flooding error messages
 stdHooks.hookWrite();
@@ -90,7 +89,7 @@ suite('Basics tests', function () {
 
     teardown(async () => {
         // Make sure that server is stopped in case something went wrong
-        if (server && _.isFunction(server.stop)) {
+        if (server && typeof server.stop === 'function') {
             server.stop();
             server = null;
         }

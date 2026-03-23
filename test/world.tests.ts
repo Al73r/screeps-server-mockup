@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 import ScreepsServer from '../src/screepsServer';
 
-const stdHooks = require('../utils/stdhooks');
+import * as stdHooks from '../utils/stdhooks';
 
 // Dirty hack to prevent driver from flooding error messages
 stdHooks.hookWrite();
@@ -28,7 +27,7 @@ suite('World tests', function () {
         await server.start();
         // Assert that game time has a correct format
         const initial = await server.world.gameTime;
-        assert(_.isNumber(initial), 'Game time is not a number.');
+        assert(typeof initial === 'number', 'Game time is not a number.');
         assert(initial > 0, 'Game time is not positive.');
         // Assert that game time is correct after a tick
         await server.tick();
@@ -90,7 +89,7 @@ suite('World tests', function () {
         await server.world.setRoom('W0N1', 'normal', false);
         const rooms: Array<{active: boolean}> = await db.rooms.find({ _id: 'W0N1' });
         assert.strictEqual(rooms.length, 1);
-        assert.strictEqual(_.first(rooms)!.active, false);
+        assert.strictEqual(rooms[0]!.active, false);
     });
 
     test('Getting and setting RoomObjetcs', async () => {
@@ -103,8 +102,8 @@ suite('World tests', function () {
         await server.world.addRoomObject('W0N1', 'mineral', 40, 40, { mineralType: 'H', density: 3, mineralAmount: 3000 });
         // Listing all RoobObjects in W0N1 and assert if they are correct
         const objects = await server.world.roomObjects('W0N1');
-        const source = _.find(objects, { type: 'source' });
-        const mineral = _.find(objects, { type: 'mineral' });
+        const source = objects.find((o: any) => o.type === 'source');
+        const mineral = objects.find((o: any) => o.type === 'mineral');
         assert.strictEqual(objects.length, 2);
         assert.strictEqual(source.x, 10);
         assert.strictEqual(source.energy, 1000);
@@ -142,16 +141,16 @@ suite('World tests', function () {
         await server.world.stubWorld();
         // Check that rooms were added
         const rooms = await db.rooms.find();
-        assert.strictEqual(rooms.length, _.size(samples));
+        assert.strictEqual(rooms.length, Object.keys(samples).length);
         // Check that terrains were added
         const terrain = await db['rooms.terrain'].find();
-        assert.strictEqual(terrain.length, _.size(samples));
-        _.each(samples, async (sourceData, roomName) => {
+        assert.strictEqual(terrain.length, Object.keys(samples).length);
+        Object.entries(samples).forEach(async ([roomName, sourceData]: [string, any]) => {
             const roomData = await db['rooms.terrain'].findOne({ room: roomName });
             assert.strictEqual(roomData.terrain, sourceData.serial);
         });
         // Check that roomObject were added
-        const nbObjects = _.sumBy(_.toArray(samples), (room) => _.size(room.objects));
+        const nbObjects = Object.values(samples).reduce((sum: number, room: any) => sum + Object.keys(room.objects).length, 0);
         const objects = await db['rooms.objects'].find();
         assert.strictEqual(objects.length, nbObjects);
     });
@@ -180,9 +179,9 @@ suite('World tests', function () {
         server.stop();
         // Assert if terrain was correctly read
         assert.strictEqual(logs.filter((line) => line.includes('terrain')).length, 3, 'invalid logs length');
-        assert.ok(_.find(logs, (line) => line.includes('W0N0 terrain: plain')), 'W0N0 terrain not found or incorrect');
-        assert.ok(_.find(logs, (line) => line.includes('W0N1 terrain: wall')), 'W0N1 terrain not found or incorrect');
-        assert.ok(_.find(logs, (line) => line.includes('W1N2 terrain: wall')), 'W1N2 terrain not found or incorrect');
+        assert.ok(logs.find((line: any) => line.includes('W0N0 terrain: plain')), 'W0N0 terrain not found or incorrect');
+        assert.ok(logs.find((line: any) => line.includes('W0N1 terrain: wall')), 'W0N1 terrain not found or incorrect');
+        assert.ok(logs.find((line: any) => line.includes('W1N2 terrain: wall')), 'W1N2 terrain not found or incorrect');
     });
 
     test('Reading exits in game', async () => {
@@ -210,14 +209,14 @@ suite('World tests', function () {
         // Assert if exits were correctly read
         // Note: the Screeps driver HTML-encodes console output, so double quotes appear as &#x22;
         assert.strictEqual(logs.filter((line) => line.includes('exits')).length, 3, 'invalid logs length');
-        assert.ok(_.find(logs, (line) => line.includes('W0N0 exits:')), 'W0N0 exits not found');
-        assert.ok(_.find(logs, (line) => line.includes('W0N1 exits:')), 'W0N1 exits not found');
-        assert.ok(_.find(logs, (line) => line.includes('W1N2 exits:')), 'W1N2 exits not found');
+        assert.ok(logs.find((line: any) => line.includes('W0N0 exits:')), 'W0N0 exits not found');
+        assert.ok(logs.find((line: any) => line.includes('W0N1 exits:')), 'W0N1 exits not found');
+        assert.ok(logs.find((line: any) => line.includes('W1N2 exits:')), 'W1N2 exits not found');
     });
 
     teardown(async () => {
         // Make sure that server is stopped in case something went wrong
-        if (server && _.isFunction(server.stop)) {
+        if (server && typeof server.stop === 'function') {
             server.stop();
             server = null;
         }

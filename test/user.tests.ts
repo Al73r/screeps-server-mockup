@@ -1,10 +1,9 @@
 import * as assert from 'assert';
 import * as fs from 'fs-extra';
-import * as _ from 'lodash';
 import * as path from 'path';
 import ScreepsServer from '../src/screepsServer';
 
-const stdHooks = require('../utils/stdhooks');
+import * as stdHooks from '../utils/stdhooks';
 
 // Dirty hack to prevent driver from flooding error messages
 stdHooks.hookWrite();
@@ -31,11 +30,11 @@ suite('User tests', function () {
         await server.tick();
         (await user.newNotifications).forEach(({ message }) => console.log('[notification]', message));
         // Assert if attributes are correct
-        assert(_.isString(user.id) && user.id.length > 0, 'invalid user id');
+        assert(typeof user.id === 'string' && user.id.length > 0, 'invalid user id');
         assert.strictEqual(user.username, 'bot');
         assert.strictEqual(await user.cpu, 100);
         assert.strictEqual(await user.cpuAvailable, 10000);
-        assert(_.isNumber(await user.lastUsedCpu), 'user.lastUsedCpu is not a number');
+        assert(typeof (await user.lastUsedCpu) === 'number', 'user.lastUsedCpu is not a number');
         assert.strictEqual(await user.gcl, 1);
         assert.deepStrictEqual(await user.rooms, ['W0N0']);
         // Assert if memory is correctly set and retrieved
@@ -54,7 +53,7 @@ suite('User tests', function () {
         const modules = {
             main: `module.exports.loop = function() {
                 RawMemory.setActiveSegments([0, 1]);
-                if (_.size(RawMemory.segments) > 0) {
+                if (Object.keys(RawMemory.segments).length > 0) {
                     RawMemory.segments[0] = '{"foo":"bar"}';
                     RawMemory.segments[1] = 'azerty';
                 }
@@ -102,7 +101,7 @@ suite('User tests', function () {
         }
         server.stop();
         // Assert if code was correctly executed
-        _.each(logs, ({ log, results, userid, username }) => {
+        logs.forEach(({ log, results, userid, username }) => {
             assert.strictEqual(userid, user.id);
             assert.strictEqual(username, 'bot');
             assert.deepStrictEqual(log, ['tick']);
@@ -128,7 +127,7 @@ suite('User tests', function () {
             await server.tick();
         }
         // Assert if code was correctly executed
-        _.each(await user.notifications, ({ message, type }) => {
+        (await user.notifications).forEach(({ message, type }: { message: string, type: string }) => {
             assert.strictEqual(type, 'error');
             assert(message.includes('something broke!'), 'message doesn\'t cointain "something broke!"');
             assert(message.includes('main:2'), 'message doesn\'t cointain error line');
@@ -139,7 +138,7 @@ suite('User tests', function () {
 
     teardown(async () => {
         // Make sure that server is stopped in case something went wrong
-        if (server && _.isFunction(server.stop)) {
+        if (server && typeof server.stop === 'function') {
             server.stop();
             server = null;
         }

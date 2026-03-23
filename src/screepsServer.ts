@@ -4,7 +4,6 @@ import * as cp from 'child_process';
 import { EventEmitter } from 'events';
 import * as fs from 'fs-extra';
 import * as fsp from 'fs/promises';
-import * as _ from 'lodash';
 import * as path from 'path';
 import World from './world';
 
@@ -63,7 +62,7 @@ export default class ScreepsServer extends EventEmitter {
             port:   21025,
         };
 
-        const options = _.defaults(opts, defaults);
+        const options = { ...defaults, ...opts };
         // Define environment parameters
         process.env.MODFILE = options.modfile;
         process.env.DRIVER_MODULE = '@screeps/driver';
@@ -118,7 +117,7 @@ export default class ScreepsServer extends EventEmitter {
         // Connect to storage process
         try {
             const oldLog = console.log;
-            console.log = _.noop; // disable console
+            console.log = (() => {}) as typeof console.log; // disable console
             await driver.connect('main');
             console.log = oldLog; // re-enable console
             this.usersQueue = await driver.queue.create('users');
@@ -138,7 +137,7 @@ export default class ScreepsServer extends EventEmitter {
     async tick() {
         await driver.notifyTickStarted();
         const users = await driver.getAllUsers();
-        await this.usersQueue.addMulti(_.map(users, (user) => user._id.toString()));
+        await this.usersQueue.addMulti(users.map((user: any) => user._id.toString()));
         await this.usersQueue.whenAllDone();
         const rooms = await driver.getAllRoomsNames() || [];
         await this.roomsQueue.addMulti(rooms);
@@ -206,7 +205,7 @@ export default class ScreepsServer extends EventEmitter {
         Stop most processes (it is not perfect though as some remain).
     */
     stop() {
-        _.each(this.processes, (process) => process.kill());
+        Object.values(this.processes).forEach((process) => process.kill());
         return this;
     }
 }

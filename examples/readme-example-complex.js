@@ -1,5 +1,4 @@
 (async function () {
-    const _ = require('lodash');
     const { ScreepsServer, TerrainMatrix } = require('screeps-server-mockup');
 
     const server = new ScreepsServer();
@@ -11,7 +10,7 @@
         // Prepare the terrain for a new room
         const terrain = new TerrainMatrix();
         const walls = [[10, 10], [10, 40], [40, 10], [40, 40]];
-        _.each(walls, ([x, y]) => terrain.set(x, y, 'wall'));
+        walls.forEach(([x, y]) => terrain.set(x, y, 'wall'));
 
         // Create a new room with terrain and basic objects
         await server.world.addRoom('W0N1');
@@ -33,7 +32,7 @@
 
         // Print console logs every tick
         bot.on('console', (logs, results, userid, username) => {
-            _.each(logs, (line) => console.log(`[console|${username}]`, line));
+            logs.forEach((line) => console.log(`[console|${username}]`, line));
         });
 
         // Start server and run several ticks
@@ -41,7 +40,7 @@
         for (let i = 0; i < 10; i += 1) {
             console.log('[tick]', await server.world.gameTime);
             await server.tick();
-            _.each(await bot.newNotifications, ({ message }) => console.log('[notification]', message));
+            (await bot.newNotifications).forEach(({ message }) => console.log('[notification]', message));
             console.log('[memory]', await bot.memory, '\n');
         }
     } catch (err) {
