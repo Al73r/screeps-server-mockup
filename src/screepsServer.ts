@@ -2,7 +2,8 @@
 
 import * as cp from 'child_process';
 import { EventEmitter } from 'events';
-import * as fs from 'fs-extra-promise';
+import * as fs from 'fs-extra';
+import * as fsp from 'fs/promises';
 import * as _ from 'lodash';
 import * as path from 'path';
 import World from './world';
@@ -90,12 +91,12 @@ export default class ScreepsServer extends EventEmitter {
     */
     async connect() {
         // Ensure directories exist
-        await fs.mkdirAsync(this.opts.path).catch(() => {});
-        await fs.mkdirAsync(this.opts.logdir).catch(() => {});
+        await fs.ensureDir(this.opts.path);
+        await fs.ensureDir(this.opts.logdir);
         // Copy assets into server directory
         await Promise.all([
-            fs.copyAsync(path.join(ASSETS_PATH, DB_FILE), path.join(this.opts.path, DB_FILE)),
-            fs.copyAsync(path.join(ASSETS_PATH, MOD_FILE), path.join(this.opts.path, MOD_FILE)),
+            fs.copy(path.join(ASSETS_PATH, DB_FILE), path.join(this.opts.path, DB_FILE)),
+            fs.copy(path.join(ASSETS_PATH, MOD_FILE), path.join(this.opts.path, MOD_FILE)),
         ]);
         // Start storage process
         this.emit('info', 'Starting storage process.');
@@ -143,7 +144,6 @@ export default class ScreepsServer extends EventEmitter {
         await this.roomsQueue.addMulti(rooms);
         await this.roomsQueue.whenAllDone();
         await driver.commitDbBulk();
-        // eslint-disable-next-line global-require
         await require('@screeps/engine/src/processor/global')();
         await driver.commitDbBulk();
         const gameTime = await driver.incrementGameTime();
@@ -158,11 +158,11 @@ export default class ScreepsServer extends EventEmitter {
         Start a child process with environment.
     */
     async startProcess(name: string, execPath: string, env: NodeJS.ProcessEnv) {
-        const fd = await fs.openAsync(path.resolve(this.opts.logdir, `${name}.log`), 'a');
-        this.processes[name] = cp.fork(path.resolve(execPath), [], { stdio: [0, fd, fd, 'ipc'], env });
+        const fd = await fsp.open(path.resolve(this.opts.logdir, `${name}.log`), 'a');
+        this.processes[name] = cp.fork(path.resolve(execPath), [], { stdio: [0, fd.fd, fd.fd, 'ipc'], env });
         this.emit('info', `[${name}] process ${this.processes[name].pid} started`);
         this.processes[name].on('exit', async (code, signal) => {
-            await fs.closeAsync(fd);
+            await fd.close();
             if (code && code !== 0) {
                 this.emit('error', `[${name}] process ${this.processes[name].pid} exited with code ${code}, restarting...`);
                 this.startProcess(name, execPath, env);
@@ -179,7 +179,6 @@ export default class ScreepsServer extends EventEmitter {
         Start processes and connect driver.
     */
     async start() {
-        // eslint-disable-next-line global-require
         this.emit('info', `Server version ${require('screeps').version}`);
         if (!this.connected) {
             await this.connect();

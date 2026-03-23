@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import * as fs from 'fs-extra-promise';
+import * as fs from 'fs-extra';
 import * as _ from 'lodash';
 import * as path from 'path';
 import ScreepsServer from '../src/screepsServer';
@@ -144,6 +144,6 @@ suite('User tests', function () {
             server = null;
         }
         // Delete server files
-        await fs.removeAsync(path.resolve('server')).catch(console.error);
+        await fs.remove(path.resolve('server')).catch(console.error);
     });
 });

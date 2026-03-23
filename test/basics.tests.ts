@@ -1,10 +1,9 @@
 import * as assert from 'assert';
-import * as fs from 'fs-extra-promise';
+import * as fs from 'fs-extra';
 import * as _ from 'lodash';
 import * as path from 'path';
 import ScreepsServer, { ScreepServerOptions } from '../src/screepsServer';
 
-// eslint-disable-next-line import/no-unresolved
 const stdHooks = require('../../utils/stdhooks');
 
 // Dirty hack to prevent driver from flooding error messages
@@ -96,8 +95,8 @@ suite('Basics tests', function () {
             server = null;
         }
         // Delete server files
-        await fs.removeAsync(path.resolve('server')).catch(console.error);
-        await fs.removeAsync(path.resolve('another_dir')).catch(console.error);
-        await fs.removeAsync(path.resolve('another_logdir')).catch(console.error);
+        await fs.remove(path.resolve('server')).catch(console.error);
+        await fs.remove(path.resolve('another_dir')).catch(console.error);
+        await fs.remove(path.resolve('another_logdir')).catch(console.error);
     });
 });

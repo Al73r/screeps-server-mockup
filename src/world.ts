@@ -15,7 +15,7 @@ interface AddBotOptions {
     cpuAvailable?: number;
     active?: number;
     spawnName?: string;
-    modules?: {};
+    modules?: object;
 }
 
 // Terrain string for room completely filled with walls
@@ -114,7 +114,7 @@ export default class World {
         Add a RoomObject to the specified room
         Returns db operation result
     */
-    async addRoomObject(room: string, type: string, x: number, y: number, attributes: {} = {}) {
+    async addRoomObject(room: string, type: string, x: number, y: number, attributes: object = {}) {
         const { db } = this.server.common.storage;
         // Check parameters
         if (x < 0 || y < 0 || x >= 50 || y >= 50) {
@@ -157,7 +157,6 @@ export default class World {
             addRoomObjects(roomName, roomObjects)
         ]);
         // Add rooms
-        // eslint-disable-next-line global-require, import/no-unresolved
         const rooms = require('../../assets/rooms.json');
         await Promise.all(_.map(rooms, (data, roomName) => {
             const terrain = TerrainMatrix.unserialize(data.serial);
