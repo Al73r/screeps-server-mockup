@@ -1,7 +1,6 @@
 /* eslint lines-between-class-members: "off" */
 
 import { EventEmitter } from 'events';
-import * as _ from 'lodash';
 import ScreepsServer from './screepsServer';
 
 type Notification = { message: string; type: string; date: number; count: number; _id: string };
@@ -70,7 +69,7 @@ export default class User extends EventEmitter {
             }));
     }
     get newNotifications() {
-        const known = _.clone(this.knownNotifications);
+        const known = [...this.knownNotifications];
         return this.notifications.then(
             (list) => list.filter((notif) => !known.includes(notif._id))
         );
@@ -101,7 +100,7 @@ export default class User extends EventEmitter {
     async getData(name: string) {
         const { db } = this._server.common.storage;
         const data = await db.users.find({ _id: this._id });
-        return _.get(_.first(data), name);
+        return data[0]?.[name];
     }
 
     /**

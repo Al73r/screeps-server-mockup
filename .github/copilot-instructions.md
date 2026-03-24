@@ -42,9 +42,9 @@ The `assets/` directory contains bootstrap JSON (db.json, rooms.json, mods.json)
 
 ## Key Conventions
 
-- **TypeScript strict mode** with CommonJS output targeting ES2018.
+- **TypeScript strict mode** with CommonJS output targeting ES2022.
 - **Async/await everywhere** — all server/world/user operations return Promises.
 - **Private fields use `_` prefix** (e.g., `_id`, `_username`, `_server`), exposed via getters.
-- **Lodash** is used pervasively: `_.map`, `_.find`, `_.each`, `_.defaults`, etc. Import as `import * as _ from 'lodash'`.
+- **Native JS over lodash** — use `Array.map/find/some/forEach`, optional chaining (`data[0]?.field`), object spread (`{ ...defaults, ...opts }`), and `typeof` checks instead of lodash utilities. Lodash is only a dev dependency.
 - **Database access** uses MongoDB-like syntax via `this.server.common.storage.db['collection.name']` with `find()`, `findOne()`, `insert()`, `update()`.
-- **Tests use Mocha TDD UI** (`suite`/`test` instead of `describe`/`it`) with Node.js `assert`. Each test creates its own `ScreepsServer` instance, runs ticks, and calls `server.stop()` in cleanup. Tests use `stdHooks.hookWrite()` from `utils/stdhooks.js` to suppress engine console noise.
+- **Tests use Mocha TDD UI** (`suite`/`test` instead of `describe`/`it`) with Node.js `assert`. Each test creates its own `ScreepsServer` instance, runs ticks, and calls `server.stop()` in cleanup. Tests use `stdHooks.hookWrite()` from `utils/stdhooks.ts` to suppress engine console noise.

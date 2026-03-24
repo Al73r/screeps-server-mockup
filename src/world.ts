@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import * as util from 'util';
 import * as zlib from 'zlib';
 import TerrainMatrix from './terrainMatrix';
@@ -15,7 +14,7 @@ interface AddBotOptions {
     cpuAvailable?: number;
     active?: number;
     spawnName?: string;
-    modules?: {};
+    modules?: object;
 }
 
 // Terrain string for room completely filled with walls
@@ -82,7 +81,7 @@ export default class World {
             throw new Error(`room ${room} doesn't appear to have any terrain data`);
         }
         // Parse and return terrain data as a TerrainMatrix
-        const serial: string | undefined = _.get(_.first(data), 'terrain');
+        const serial: string | undefined = data[0]?.terrain;
         if (serial === undefined) {
             throw new Error(`room ${room} terrain data is missing the terrain field`);
         }
@@ -114,7 +113,7 @@ export default class World {
         Add a RoomObject to the specified room
         Returns db operation result
     */
-    async addRoomObject(room: string, type: string, x: number, y: number, attributes: {} = {}) {
+    async addRoomObject(room: string, type: string, x: number, y: number, attributes: object = {}) {
         const { db } = this.server.common.storage;
         // Check parameters
         if (x < 0 || y < 0 || x >= 50 || y >= 50) {
@@ -131,7 +130,7 @@ export default class World {
     async reset() {
         const { db, env } = await this.load();
         // Clear database
-        await Promise.all(_.map(db, (col) => col.clear()));
+        await Promise.all(Object.values(db).map((col: any) => col.clear()));
         await env.set(env.keys.GAMETIME, 1);
 
         // Insert invaders and sourcekeeper users
@@ -157,9 +156,8 @@ export default class World {
             addRoomObjects(roomName, roomObjects)
         ]);
         // Add rooms
-        // eslint-disable-next-line global-require, import/no-unresolved
         const rooms = require('../../assets/rooms.json');
-        await Promise.all(_.map(rooms, (data, roomName) => {
+        await Promise.all(Object.entries(rooms).map(([roomName, data]: [string, any]) => {
             const terrain = TerrainMatrix.unserialize(data.serial);
             return addRoom(roomName, terrain, data.objects);
         }));
@@ -222,15 +220,15 @@ export default class World {
         ]);
         rooms.forEach((room: any) => {
             if (room.status === 'out of borders') {
-                _.find(terrain, { room: room._id }).terrain = walled;
+                terrain.find((t: any) => t.room === room._id)!.terrain = walled;
             }
             const m = room._id.match(/(W|E)(\d+)(N|S)(\d+)/);
             const roomH = m[1] + (+m[2] + 1) + m[3] + m[4];
             const roomV = m[1] + m[2] + m[3] + (+m[4] + 1);
-            if (!_.some(terrain, { room: roomH })) {
+            if (!terrain.some((t: any) => t.room === roomH)) {
                 terrain.push({ room: roomH, terrain: walled });
             }
-            if (!_.some(terrain, { room: roomV })) {
+            if (!terrain.some((t: any) => t.room === roomV)) {
                 terrain.push({ room: roomV, terrain: walled });
             }
         });

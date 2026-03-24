@@ -1,5 +1,3 @@
-import * as _ from 'lodash';
-
 type TerrainTypes = 'plain'|'wall'|'swamp';
 const TYPES: TerrainTypes[] = ['plain', 'wall', 'swamp'];
 
@@ -17,7 +15,7 @@ export default class Matrix {
         Getters
     */
     get(x: number, y: number): TerrainTypes {
-        return _.get(this.data, `${x}:${y}`, 'plain');
+        return this.data[`${x}:${y}`] ?? 'plain';
     }
 
     /**
@@ -25,7 +23,7 @@ export default class Matrix {
     */
     set(x: number, y: number, value: TerrainTypes): this {
         if (TYPES.includes(value)) {
-            _.set(this.data, `${x}:${y}`, value);
+            this.data[`${x}:${y}`] = value;
         } else {
             throw new Error(`invalid value ${value}`);
         }
@@ -56,10 +54,10 @@ export default class Matrix {
     */
     static unserialize(str: string): Matrix {
         const matrix = new Matrix();
-        _.each(str.split(''), (mask, idx) => {
+        str.split('').forEach((mask, idx) => {
             const x = idx % 50;
             const y = Math.floor(idx / 50);
-            const terrain = _.get(TYPES, mask);
+            const terrain = TYPES[Number(mask)];
             if (terrain == null) {
                 throw new Error(`invalid terrain mask: ${mask}`);
             } else if (terrain !== 'plain') {
